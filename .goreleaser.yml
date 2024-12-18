@@ -30,25 +30,25 @@ dockers:
     dockerfile: Dockerfile
     goarch: amd64
     image_templates:
-      - {{ .Env.TARGET }}/hcloud-cloud-controller-manager:{{ if not .IsSnapshot }}v{{ end }}{{ .Version }}-amd64
+      - '{{ .Env.TARGET }}/hcloud-cloud-controller-manager:{{ if not .IsSnapshot }}v{{ end }}{{ .Version }}-amd64'
     use: buildx
   - build_flag_templates: [--platform=linux/arm64]
     dockerfile: Dockerfile
     goarch: arm64
     image_templates:
-      - {{ .Env.TARGET }}/hcloud-cloud-controller-manager:{{ if not .IsSnapshot }}v{{ end }}{{ .Version }}-arm64v8
+      - '{{ .Env.TARGET }}/hcloud-cloud-controller-manager:{{ if not .IsSnapshot }}v{{ end }}{{ .Version }}-arm64v8'
     use: buildx
   - build_flag_templates: [--platform=linux/arm/v6]
     dockerfile: Dockerfile
     goarch: arm
     goarm: 6
     image_templates:
-      - {{ .Env.TARGET }}/hcloud-cloud-controller-manager:{{ if not .IsSnapshot }}v{{ end }}{{ .Version }}-armv6
+      - '{{ .Env.TARGET }}/hcloud-cloud-controller-manager:{{ if not .IsSnapshot }}v{{ end }}{{ .Version }}-armv6'
     use: buildx
 
 docker_manifests:
   - name_template: hetznercloud/hcloud-cloud-controller-manager:{{ if not .IsSnapshot }}v{{ end }}{{ .Version }}
     image_templates:
-      - {{ .Env.TARGET }}/hcloud-cloud-controller-manager:{{ if not .IsSnapshot }}v{{ end }}{{ .Version }}-amd64
-      - {{ .Env.TARGET }}/hcloud-cloud-controller-manager:{{ if not .IsSnapshot }}v{{ end }}{{ .Version }}-arm64v8
-      - {{ .Env.TARGET }}/hcloud-cloud-controller-manager:{{ if not .IsSnapshot }}v{{ end }}{{ .Version }}-armv6
+      - '{{ .Env.TARGET }}/hcloud-cloud-controller-manager:{{ if not .IsSnapshot }}v{{ end }}{{ .Version }}-amd64'
+      - '{{ .Env.TARGET }}/hcloud-cloud-controller-manager:{{ if not .IsSnapshot }}v{{ end }}{{ .Version }}-arm64v8'
+      - '{{ .Env.TARGET }}/hcloud-cloud-controller-manager:{{ if not .IsSnapshot }}v{{ end }}{{ .Version }}-armv6'
