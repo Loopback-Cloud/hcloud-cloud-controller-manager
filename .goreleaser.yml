@@ -49,6 +49,6 @@ dockers:
 docker_manifests:
   - name_template: hetznercloud/hcloud-cloud-controller-manager:{{ if not .IsSnapshot }}v{{ end }}{{ .Version }}
     image_templates:
-      - {{ .Env.DOCKER_TARGET }}/hcloud-cloud-controller-manager:{{ if not .IsSnapshot }}v{{ end }}{{ .Version }}-amd64
-      - {{ .Env.DOCKER_TARGET }}/hcloud-cloud-controller-manager:{{ if not .IsSnapshot }}v{{ end }}{{ .Version }}-arm64v8
-      - {{ .Env.DOCKER_TARGET }}/hcloud-cloud-controller-manager:{{ if not .IsSnapshot }}v{{ end }}{{ .Version }}-armv6
+      - cargo.ayedo.cloud/loopback-public/hcloud-cloud-controller-manager:{{ if not .IsSnapshot }}v{{ end }}{{ .Version }}-amd64
+      - cargo.ayedo.cloud/loopback-public/hcloud-cloud-controller-manager:{{ if not .IsSnapshot }}v{{ end }}{{ .Version }}-arm64v8
+      - cargo.ayedo.cloud/loopback-public/hcloud-cloud-controller-manager:{{ if not .IsSnapshot }}v{{ end }}{{ .Version }}-armv6
