@@ -281,11 +281,16 @@ func (s hcloudServer) Metadata(addressFamily config.AddressFamily, networkID int
 	nodeAddresses := hcloudNodeAddresses(addressFamily, networkID, s.Server)
 
 	// @philipj: Add NodeIp if specified
-	if node != nil && node.Spec.LoopbackIP != "" {
-		nodeAddresses = append(
-			nodeAddresses,
-			corev1.NodeAddress{Type: corev1.NodeInternalIP, Address: node.Spec.LoopbackIP},
-		)
+	if node != nil {
+		for _, addr := range node.Status.Addresses {
+			if addr.Type == corev1.NodeInternalIP {
+				nodeAddresses = append(
+					nodeAddresses,
+					corev1.NodeAddress{Type: corev1.NodeInternalIP, Address: addr.Address},
+				)
+				break
+			}
+		}
 	}
 	
 	return &cloudprovider.InstanceMetadata{
