@@ -222,16 +222,17 @@ func hcloudNodeAddresses(addressFamily config.AddressFamily, networkID int64, se
 	}
 
 	// Add private IP from network if network is specified
-	if networkID > 0 {
-		for _, privateNet := range server.PrivateNet {
-			if privateNet.Network.ID == networkID {
-				addresses = append(
-					addresses,
-					corev1.NodeAddress{Type: corev1.NodeInternalIP, Address: privateNet.IP.String()},
-				)
-			}
+	// @philipj: Removed HCloud network requirement
+	//if networkID > 0 {
+	for _, privateNet := range server.PrivateNet {
+		if privateNet.Network.ID == networkID {
+			addresses = append(
+				addresses,
+				corev1.NodeAddress{Type: corev1.NodeInternalIP, Address: privateNet.IP.String()},
+			)
 		}
 	}
+	//}
 	return addresses
 }
 
