@@ -111,7 +111,7 @@ func (i *instances) lookupServer(
 			return nil, fmt.Errorf("failed to get robot server %q: %w", node.Name, err)
 		}
 	}
-
+	
 	if cloudServer != nil && hrobotServer != nil {
 		i.recorder.Eventf(
 			node,
@@ -130,7 +130,7 @@ func (i *instances) lookupServer(
 		return robotServer{hrobotServer, i.robotClient}, nil
 	default:
 		// Both nil
-		return nil, nil
+		return genericServer{node}, nil
 	}
 }
 
@@ -264,6 +264,45 @@ func robotNodeAddresses(addressFamily config.AddressFamily, server *hrobotmodels
 	return addresses
 }
 
+func customNodeAddresses(addressFamily config.AddressFamily, node *corev1.Node) []corev1.NodeAddress {
+	var out []corev1.NodeAddress
+
+	out = append(out, corev1.NodeAddress{
+		Type:    corev1.NodeHostName,
+		Address: node.Name,
+	})
+
+	for _, addr := range node.Status.Addresses {
+		switch addr.Type {
+		case corev1.NodeInternalIP, corev1.NodeExternalIP:
+			ip := net.ParseIP(addr.Address)
+			if ip == nil {
+				continue
+			}
+
+			if addressAllowed(ip, addressFamily) {
+				out = append(out, addr) // preserve original Type
+			}
+		}
+	}
+
+	return out
+}
+
+// addressAllowed decides whether ip belongs to the requested family.
+func addressAllowed(ip net.IP, family config.AddressFamily) bool {
+	switch family {
+	case config.AddressFamilyDualStack:
+		return true // keep everything
+	case config.AddressFamilyIPv4:
+		return ip.To4() != nil
+	case config.AddressFamilyIPv6:
+		return ip.To4() == nil // i.e. it's v6
+	default:
+		return false
+	}
+}
+
 type genericServer interface {
 	IsShutdown() (bool, error)
 	Metadata(addressFamily config.AddressFamily, networkID int64, node *corev1.Node) (*cloudprovider.InstanceMetadata, error)
@@ -330,6 +369,18 @@ func (s robotServer) Metadata(addressFamily config.AddressFamily, _ int64, node 
 		Region:        getRegionOfRobotServer(s.Server),
 		AdditionalLabels: map[string]string{
 			ProvidedBy: "robot",
+		},
+	}, nil
+}
+
+func (s genericServer) Metadata(addressFamily config.AddressFamily, _ int64, node *corev1.Node) (*cloudprovider.InstanceMetadata, error) {
+	return &cloudprovider.InstanceMetadata{
+		InstanceType:  "custom",
+		NodeAddresses: customNodeAddresses(addressFamily, node),
+		Zone:          "custom",
+		Region:        "custom",
+		AdditionalLabels: map[string]string{
+			ProvidedBy: "custom",
 		},
 	}, nil
 }
