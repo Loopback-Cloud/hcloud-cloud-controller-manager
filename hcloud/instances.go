@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"strings"
 
 	hrobotmodels "github.com/syself/hrobot-go/models"
 	corev1 "k8s.io/api/core/v1"
@@ -63,6 +64,11 @@ func (i *instances) lookupServer(
 	node *corev1.Node,
 ) (genericServer, error) {
 	if node.Spec.ProviderID != "" {
+		// No-op for custom
+		if strings.HasPrefix(node.Spec.ProviderID, "custom-") {
+			return customServer{node}, nil
+		}
+		
 		var serverID int64
 		serverID, isCloudServer, err := providerid.ToServerID(node.Spec.ProviderID)
 
@@ -388,6 +394,7 @@ func (s customServer) Metadata(addressFamily config.AddressFamily, _ int64, node
     }
 
     return &cloudprovider.InstanceMetadata{
+		ProviderID:    fmt.Sprintf("custom-%s", node.Name),
         InstanceType:  "custom",
         NodeAddresses: customNodeAddresses(addressFamily, node),
         Zone:          "custom",
