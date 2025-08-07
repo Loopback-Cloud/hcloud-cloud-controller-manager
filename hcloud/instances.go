@@ -65,7 +65,7 @@ func (i *instances) lookupServer(
 ) (genericServer, error) {
 	if node.Spec.ProviderID != "" {
 		// No-op for custom
-		if strings.HasPrefix(node.Spec.ProviderID, "custom-") {
+		if strings.HasPrefix(node.Spec.ProviderID, "loopback-cloud://") {
 			return customServer{node}, nil
 		}
 		
@@ -394,13 +394,13 @@ func (s customServer) Metadata(addressFamily config.AddressFamily, _ int64, node
     }
 
     return &cloudprovider.InstanceMetadata{
-		ProviderID:    fmt.Sprintf("custom-%s", node.Name),
+		ProviderID:    fmt.Sprintf("loopback-cloud://%s", node.Name),
         InstanceType:  "custom",
         NodeAddresses: customNodeAddresses(addressFamily, node),
         Zone:          "custom",
         Region:        "custom",
         AdditionalLabels: map[string]string{
-            ProvidedBy: "custom",
+            ProvidedBy: "loopback-cloud",
         },
     }, nil
 }
