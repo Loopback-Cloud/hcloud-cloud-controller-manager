@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net"
 
 	hrobotmodels "github.com/syself/hrobot-go/models"
 	corev1 "k8s.io/api/core/v1"
@@ -129,8 +130,7 @@ func (i *instances) lookupServer(
 	case hrobotServer != nil:
 		return robotServer{hrobotServer, i.robotClient}, nil
 	default:
-		// Both nil
-		return genericServer{node}, nil
+		return customServer{node}, nil
 	}
 }
 
@@ -373,14 +373,27 @@ func (s robotServer) Metadata(addressFamily config.AddressFamily, _ int64, node 
 	}, nil
 }
 
-func (s genericServer) Metadata(addressFamily config.AddressFamily, _ int64, node *corev1.Node) (*cloudprovider.InstanceMetadata, error) {
-	return &cloudprovider.InstanceMetadata{
-		InstanceType:  "custom",
-		NodeAddresses: customNodeAddresses(addressFamily, node),
-		Zone:          "custom",
-		Region:        "custom",
-		AdditionalLabels: map[string]string{
-			ProvidedBy: "custom",
-		},
-	}, nil
+type customServer struct {
+    node *corev1.Node
+}
+
+func (s customServer) IsShutdown() (bool, error) {
+    // With no out-of-band power data we assume the node is running.
+    return false, nil
+}
+
+func (s customServer) Metadata(addressFamily config.AddressFamily, _ int64, node *corev1.Node) (*cloudprovider.InstanceMetadata, error) {
+    if node == nil {
+        node = s.node
+    }
+
+    return &cloudprovider.InstanceMetadata{
+        InstanceType:  "custom",
+        NodeAddresses: customNodeAddresses(addressFamily, node),
+        Zone:          "custom",
+        Region:        "custom",
+        AdditionalLabels: map[string]string{
+            ProvidedBy: "custom",
+        },
+    }, nil
 }
