@@ -44,6 +44,15 @@ func newLoadBalancers(lbOps LoadBalancerOps, disablePrivateIngressDefault bool, 
 	}
 }
 
+// If providedby is empty or "custom" skip
+func isCustomProvidedNode(n *corev1.Node) bool {
+	if n == nil {
+		return false
+	}
+	v, ok := n.Labels["ProvidedBy"]
+	return !ok || v == "custom"
+}
+
 func matchNodeSelector(svc *corev1.Service, nodes []*corev1.Node) ([]*corev1.Node, error) {
 	var (
 		err           error
@@ -59,6 +68,10 @@ func matchNodeSelector(svc *corev1.Service, nodes []*corev1.Node) ([]*corev1.Nod
 	}
 
 	for _, n := range nodes {
+		if isCustomProvidedNode(n) {
+			continue
+		}
+		
 		if selector.Matches(labels.Set(n.GetLabels())) {
 			selectedNodes = append(selectedNodes, n)
 		}
